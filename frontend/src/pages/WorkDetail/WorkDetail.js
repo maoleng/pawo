@@ -45,6 +45,13 @@ function WorkDetail() {
     const { state } = useLocation()
 
     useEffect(() => {
+        // localStorage.setItem('isWorkPaidSuccess', JSON.stringify(false))
+        // if (state) {
+        //     localStorage.setItem('workDetail', JSON.stringify({ ...state?.work }))
+        // } else if (localStorage.getItem('workDetail') !== null) {
+        //     const work = JSON.parse(localStorage.getItem('workDetail'))
+        //     setWork({ ...work })
+        // }
         setWork({ ...state?.work })
     }, [])
 
@@ -64,7 +71,8 @@ function WorkDetail() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
+                    // localStorage.setItem('isWorkPaidSuccess', JSON.stringify(true))
                     await wallet.callMethod({
                         method: 'VerifyPaymentRequest',
                         args: data,
@@ -96,14 +104,15 @@ function WorkDetail() {
 
         await axiosInstance({
             method: 'PUT',
-            url: `job/${data.id}`,
-            data: { deadline: data.deadline },
+            url: `job/${data.jobId}`,
+            data: { deadline: dateTime },
             headers: {
                 Authorization: wallet.accountId,
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                console.log(res)
+                if (res.data.status) {
                     await wallet.callMethod({
                         method: 'SetJobDeadline',
                         args: {
@@ -114,7 +123,7 @@ function WorkDetail() {
                     })
                     setError({ status: false })
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data.message })
                 }
             })
             .catch((res) => {
@@ -148,7 +157,7 @@ function WorkDetail() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
                     await wallet.callMethod({
                         method: 'Evaluate',
                         args: data,
@@ -234,9 +243,9 @@ function WorkDetail() {
                                                                         Processing: 'neutral',
                                                                         Cancelled: 'danger',
                                                                     }[
-                                                                        work.status === '1'
+                                                                        work.status === 1
                                                                             ? 'Processing'
-                                                                            : work.status === '2' || work.status === '4'
+                                                                            : work.status === 2 || work.status === 4
                                                                             ? 'Pending'
                                                                             : 'Cancelled'
                                                                     ]
@@ -262,17 +271,18 @@ function WorkDetail() {
                                                             marginTop: '10px',
                                                         }}
                                                     >
-                                                        {work.categories.map((category, index) => (
-                                                            <Chip
-                                                                variant="soft"
-                                                                color="neutral"
-                                                                size="lg"
-                                                                sx={{ pointerEvents: 'none' }}
-                                                                key={index}
-                                                            >
-                                                                {category}
-                                                            </Chip>
-                                                        ))}
+                                                        {'categories' in work &&
+                                                            work.categories.map((category, index) => (
+                                                                <Chip
+                                                                    variant="soft"
+                                                                    color="neutral"
+                                                                    size="lg"
+                                                                    sx={{ pointerEvents: 'none' }}
+                                                                    key={index}
+                                                                >
+                                                                    {category}
+                                                                </Chip>
+                                                            ))}
                                                     </Box>
                                                 </Col>
                                             </Row>

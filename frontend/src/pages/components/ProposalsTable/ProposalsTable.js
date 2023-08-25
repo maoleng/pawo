@@ -76,35 +76,22 @@ function ProposalsTable() {
     console.log(proposalList)
 
     useEffect(() => {
-        getAllProposalsByAccountId()
-            .then((res) => {
-                const { status, data } = JSON.parse(res)
-                console.log(JSON.parse(res))
-                if (status) {
-                    setProposalList([...data])
-                }
+        ;(async () => {
+            await axiosInstance({
+                method: 'GET',
+                url: `job_user?_filter=userId:${userId}&_fields=jobId,userId,message,createdAt,jobObj&_noPagination=1`,
             })
-            .catch((alert) => {
-                console.log(alert)
-            })
-        // .finally(() => {
-        //     setUiPleaseWait(false)
-        // })
+                .then((res) => {
+                    if (res.data.status) {
+                        setProposalList([...res.data.data])
+                    }
+                    console.log(res)
+                })
+                .catch((res) => {
+                    console.log(res)
+                })
+        })()
     }, [])
-
-    const getAllProposalsByAccountId = async () => {
-        // await axiosInstance({
-        //     method: 'GET',
-        //     url: `/job_user`,
-        // })
-        //     .then((res) => {
-
-        //     })
-        //     .catch((res) => {
-        //         console.log(res)
-        //     })
-        return wallet.viewMethod({ method: 'GetJobRegisteredByUser', args: { id: userId }, contractId })
-    }
 
     const renderFilters = () => (
         <Fragment>
@@ -231,7 +218,7 @@ function ProposalsTable() {
                                     checked={selected.length === proposalList.length}
                                     onChange={(e) => {
                                         setSelected(
-                                            e.target.checked ? proposalList.map((proposal) => proposal.job.id) : [],
+                                            e.target.checked ? proposalList.map((proposal) => proposal.jobObj.id) : [],
                                         )
                                     }}
                                     color={
@@ -269,16 +256,16 @@ function ProposalsTable() {
                     </thead>
                     <tbody>
                         {stableSort(proposalList, getComparator(order, 'id')).map((proposal) => (
-                            <tr key={proposal.job.id}>
+                            <tr key={proposal.jobObj.id}>
                                 <td style={{ textAlign: 'center' }}>
                                     <Checkbox
-                                        checked={selected.includes(proposal.job.id)}
-                                        color={selected.includes(proposal.job.id) ? 'primary' : undefined}
+                                        checked={selected.includes(proposal.jobObj.id)}
+                                        color={selected.includes(proposal.jobObj.id) ? 'primary' : undefined}
                                         onChange={(event) => {
                                             setSelected((ids) =>
                                                 event.target.checked
-                                                    ? ids.concat(proposal.job.id)
-                                                    : ids.filter((itemId) => itemId !== proposal.job.id),
+                                                    ? ids.concat(proposal.jobObj.id)
+                                                    : ids.filter((itemId) => itemId !== proposal.jobObj.id),
                                             )
                                         }}
                                         slotProps={{ checkbox: { sx: { textAlign: 'left' } } }}
@@ -287,7 +274,7 @@ function ProposalsTable() {
                                 </td>
                                 <td>
                                     <LinkRoute to={config.routes.workDetail}>
-                                        <Typography fontWeight="md">{proposal.job.title}</Typography>
+                                        <Typography fontWeight="md">{proposal.jobObj.title}</Typography>
                                     </LinkRoute>
                                 </td>
                                 <td>{proposal.createAt ? format(new Date(proposal.createAt), 'PP') : 'Feb 3, 2023'}</td>
@@ -299,17 +286,17 @@ function ProposalsTable() {
                                             {
                                                 Success: <CheckmarkRegular />,
                                                 Pending: <ArrowStepBackRegular />,
-                                            }['freelancer' in proposal?.job ? 'Success' : 'Pending']
+                                            }['freelancer' in proposal?.jobObj ? 'Success' : 'Pending']
                                         }
                                         color={
                                             {
                                                 Success: 'success',
                                                 Pending: 'neutral',
-                                            }['freelancer' in proposal?.job ? 'Success' : 'Pending']
+                                            }['freelancer' in proposal?.jobObj ? 'Success' : 'Pending']
                                         }
                                         sx={{ fontSize: '1.2rem' }}
                                     >
-                                        {['freelancer' in proposal?.job ? 'Success' : 'Pending']}
+                                        {['freelancer' in proposal?.jobObj ? 'Success' : 'Pending']}
                                     </Chip>
                                 </td>
                                 <td>
@@ -317,29 +304,29 @@ function ProposalsTable() {
                                         <Avatar size="sm">C</Avatar>
                                         <div>
                                             <Typography fontWeight="lg" level="body3" textColor="text.primary">
-                                                {proposal?.job.creator.accountId}
+                                                tienne.testnet
                                             </Typography>
                                         </div>
                                     </Box>
                                 </td>
                                 <td>{proposal.createAt ? format(new Date(proposal.createAt), 'PP') : 'Feb 3, 2023'}</td>
                                 <td>
-                                    <LinkRoute
-                                        to={config.routes.workDetailFreelancerSide}
-                                        state={{ work: proposal?.job }}
-                                    >
-                                        <Link
-                                            fontWeight="lg"
-                                            component="button"
-                                            color="neutral"
-                                            sx={{ ml: 2 }}
-                                            startDecorator={<EyeRegular />}
+                                    {'freelancerId' in proposal?.jobObj && (
+                                        <LinkRoute
+                                            to={config.routes.workDetailFreelancerSide}
+                                            state={{ work: proposal?.jobObj }}
                                         >
-                                            View
-                                        </Link>
-                                    </LinkRoute>
-                                    {/* {'freelancer' in proposal?.job && (
-                                    )} */}
+                                            <Link
+                                                fontWeight="lg"
+                                                component="button"
+                                                color="neutral"
+                                                sx={{ ml: 2 }}
+                                                startDecorator={<EyeRegular />}
+                                            >
+                                                View
+                                            </Link>
+                                        </LinkRoute>
+                                    )}
                                 </td>
                             </tr>
                         ))}

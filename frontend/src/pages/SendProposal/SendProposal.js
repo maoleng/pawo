@@ -59,12 +59,12 @@ function SendProposal() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
                     await wallet.callMethod({ method: 'RegisterJob', args: data, contractId })
                     setError({ status: false })
                     setOpenModalAlert(true)
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data?.message })
                 }
             })
             .catch((res) => {

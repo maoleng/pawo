@@ -58,11 +58,12 @@ function WorkDetailFreelancerSide() {
             },
         })
             .then((res) => {
-                if (res.status) {
+                if (res.data.status) {
                     wallet.callMethod({ method: 'SendPaymentRequest', args: data, contractId })
                     setError({ status: false })
+                    setOpenModalSubmitProduct(true)
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data?.message })
                 }
             })
             .catch((res) => {
@@ -71,7 +72,6 @@ function WorkDetailFreelancerSide() {
             })
             .finally(() => {
                 setOpenModalRequestLoading(false)
-                setOpenModalSubmitProduct(true)
             })
     }
 
@@ -95,7 +95,7 @@ function WorkDetailFreelancerSide() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
                     await wallet.callMethod({
                         method: 'Evaluate',
                         args: data,
@@ -104,7 +104,7 @@ function WorkDetailFreelancerSide() {
                     setError({ status: false })
                     setOpenModalRatingSuccess(true)
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data?.message })
                 }
             })
             .catch((res) => {
@@ -181,10 +181,10 @@ function WorkDetailFreelancerSide() {
                                                                         Processing: 'neutral',
                                                                         Cancelled: 'danger',
                                                                     }[
-                                                                        state?.work.status === '1'
+                                                                        state?.work.status === 1
                                                                             ? 'Processing'
-                                                                            : state?.work.status === '2' ||
-                                                                              state?.work.status === '4'
+                                                                            : state?.work.status === 2 ||
+                                                                              state?.work.status === 4
                                                                             ? 'Pending'
                                                                             : 'Cancelled'
                                                                     ]

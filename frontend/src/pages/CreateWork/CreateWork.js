@@ -1,5 +1,6 @@
 import { Fragment, useState, useContext } from 'react'
 import { useLocation } from 'react-router-dom'
+import axios from 'axios'
 import classNames from 'classnames/bind'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
@@ -65,17 +66,16 @@ function CreateWork() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
                     await wallet.callMethod({
                         method: 'CreateJob',
                         args: data,
                         contractId,
-                        gas: '10000000000000',
                     })
                     setError({ status: false })
                     setOpenCreateModal(true)
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data?.message })
                 }
             })
             .catch((res) => {
@@ -113,7 +113,7 @@ function CreateWork() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
                     await wallet.callMethod({
                         method: 'UpdateJob',
                         args: data,
@@ -121,7 +121,7 @@ function CreateWork() {
                     })
                     setError({ status: false })
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data?.message })
                 }
             })
             .catch((res) => {
@@ -148,7 +148,7 @@ function CreateWork() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
                     await wallet.callMethod({
                         method: 'DeleteJob',
                         args: {
@@ -158,7 +158,7 @@ function CreateWork() {
                     })
                     setError({ status: false })
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data?.message })
                 }
             })
             .catch((res) => {

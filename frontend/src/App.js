@@ -40,10 +40,6 @@ function App({ isSignedIn, contractId, wallet }) {
         registerUser()
     }, [])
 
-    const getUser = () => {
-        return wallet.viewMethod({ method: 'GetUser', args: { accountId: wallet.accountId }, contractId })
-    }
-
     return (
         <WalletContext.Provider value={{ isSignedIn, contractId, wallet, userId }}>
             <MaterialCssVarsProvider defaultMode="dark" theme={{ [MATERIAL_THEME_ID]: materialTheme }}>

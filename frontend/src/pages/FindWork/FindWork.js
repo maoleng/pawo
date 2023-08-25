@@ -23,6 +23,7 @@ import Rating from '@mui/material/Rating'
 import { SearchRegular } from '@fluentui/react-icons'
 
 import { WalletContext } from '../../App'
+import { axiosInstance } from '../../utils/axiosInstance'
 import Banner from '../../pages/components/Banner'
 import LoadingSkeleton from '../../pages/components/LoadingSkeleton'
 import config from '../../config'
@@ -35,25 +36,22 @@ function FindWork() {
     const [workList, setWorkList] = useState(null)
 
     useEffect(() => {
-        getAllAvailableJob()
-            .then((res) => {
-                const { status, data } = JSON.parse(res)
-                console.log(data)
-                if (status) {
-                    setWorkList([...data])
-                }
+        ;(async () => {
+            await axiosInstance({
+                method: 'GET',
+                url: `job?_filter=status:0&_fields=title,description,categories,money,creatorId,status,freelancerId,startedAt,finishedAts,deadline,createdAt&_noPagination=1`,
             })
-            .catch((alert) => {
-                console.log(alert)
-            })
-        // .finally(() => {
-        //     setUiPleaseWait(false)
-        // })
+                .then((res) => {
+                    if (res.data.status) {
+                        setWorkList([...res.data.data])
+                    }
+                    console.log(res)
+                })
+                .catch((res) => {
+                    console.log(res)
+                })
+        })()
     }, [])
-
-    const getAllAvailableJob = () => {
-        return wallet.viewMethod({ method: 'GetJob', args: { status: 0 }, contractId })
-    }
 
     function dateComparator(firstWork, secondWork) {
         console.log(firstWork)

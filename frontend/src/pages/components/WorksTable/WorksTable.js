@@ -31,6 +31,7 @@ import {
 } from '@fluentui/react-icons'
 
 import { WalletContext } from '../../../App'
+import { axiosInstance } from '../../../utils/axiosInstance'
 import config from '../../../config'
 
 function descendingComparator(a, b, orderBy) {
@@ -71,41 +72,36 @@ function WorksTable() {
     console.log(userId)
 
     useEffect(() => {
-        getAllJobByCreator()
-            .then((res) => {
-                const { status, data } = JSON.parse(res)
-                if (status) {
-                    setWorkList([...data])
-                }
+        ;(async () => {
+            await axiosInstance({
+                method: 'GET',
+                url: `job?_filter=creatorId:${userId}&_fields=title,description,categories,money,creatorId,status,freelancerId,startedAt,finishedAts,deadline,createdAt&_noPagination=1`,
             })
-            .catch((alert) => {
-                console.log(alert)
-            })
+                .then((res) => {
+                    if (res.data.status) {
+                        setWorkList([...res.data.data])
+                    }
+                    console.log(res)
+                })
+                .catch((res) => {
+                    console.log(res)
+                })
+        })()
     }, [])
 
-    const getAllJobByCreator = () => {
-        return wallet.viewMethod({ method: 'GetJob', args: { creatorId: userId }, contractId })
-    }
-
-    const deleteJobHandler = (e) => {
-        e.preventDefault()
-        // setUiPleaseWait(true)
-        const { workCoverLetter } = e.target.elements
-        console.log(workCoverLetter.value)
-        console.log(work.id)
-
-        // use the wallet to send the greeting to the contract
-        wallet
-            .callMethod({ method: 'RegisterJob', args: { id: work.id, message: workCoverLetter.value }, contractId })
-            .then(async (res) => {
-                // return getGreeting()
-                setOpenModal(true)
-                console.log(res)
-            })
-        // .then(setValueFromBlockchain)
-        // .finally(() => {
-        //     setUiPleaseWait(false)
-        // })
+    const workStatusConvert = (status) => {
+        switch (status) {
+            case 2:
+                return 'Pending'
+            case 3:
+                return 'Stopped'
+            case 4:
+                return 'Paid'
+            case 5:
+                return 'Cancelled'
+            default:
+                return 'Processing'
+        }
     }
 
     const renderFilters = () => (
@@ -300,18 +296,30 @@ function WorksTable() {
                                                 Paid: <CheckmarkRegular />,
                                                 Processing: <ArrowStepBackRegular />,
                                                 Cancelled: <DismissRegular />,
-                                            }['Processing']
+                                            }[
+                                                work.status === 4
+                                                    ? 'Paid'
+                                                    : work.status === 1 || work.status === 2
+                                                    ? 'Processing'
+                                                    : 'Cancelled'
+                                            ]
                                         }
                                         color={
                                             {
                                                 Paid: 'success',
                                                 Processing: 'neutral',
                                                 Cancelled: 'danger',
-                                            }['Processing']
+                                            }[
+                                                work.status === 4
+                                                    ? 'Paid'
+                                                    : work.status === 1 || work.status === 2
+                                                    ? 'Processing'
+                                                    : 'Cancelled'
+                                            ]
                                         }
                                         sx={{ fontSize: '1.2rem' }}
                                     >
-                                        {'Processing'}
+                                        {workStatusConvert(work.status)}
                                     </Chip>
                                 </td>
                                 <td>
@@ -328,7 +336,7 @@ function WorksTable() {
                                 <td>
                                     <LinkRoute
                                         to={
-                                            'freelancer' in work
+                                            'freelancerId' in work && !!work.freelancerId
                                                 ? config.routes.workDetail
                                                 : config.routes.workProposals
                                         }

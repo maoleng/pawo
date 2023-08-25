@@ -30,7 +30,7 @@ const cx = classNames.bind(styles)
 
 function WorkProposals() {
     const { contractId, wallet } = useContext(WalletContext)
-    const [proposals, setProposals] = useState([])
+    const [proposals, setProposalList] = useState([])
     const [openModalAlert, setOpenModalAlert] = useState(false)
     const [openModalLoading, setOpenModalLoading] = useState(false)
     const [error, setError] = useState({ status: false, message: '' })
@@ -38,22 +38,23 @@ function WorkProposals() {
     const { state } = useLocation()
 
     useEffect(() => {
-        getAllProposalsOfThisJob(state?.work)
-            .then((res) => {
-                const { status, data } = JSON.parse(res)
-                if (status) {
-                    setProposals([...data])
-                }
+        ;(async () => {
+            await axiosInstance({
+                method: 'GET',
+                url: `job_user?_filter=jobId:${state?.work.id}&_fields=jobId,userId,message,createdAt,jobObj,userObj&_noPagination=1`,
             })
-            .catch((alert) => {
-                console.log(alert)
-            })
+                .then((res) => {
+                    if (res.data.status) {
+                        console.log(res.data.data)
+                        setProposalList([...res.data.data])
+                    }
+                    console.log(res)
+                })
+                .catch((res) => {
+                    console.log(res)
+                })
+        })()
     }, [])
-
-    const getAllProposalsOfThisJob = (work) => {
-        console.log(work?.id)
-        return wallet.viewMethod({ method: 'GetJobRegister', contractId, args: { id: work?.id } })
-    }
 
     const chooseFreelancerHandler = async (freelancerId) => {
         console.log(freelancerId)
@@ -69,7 +70,7 @@ function WorkProposals() {
             },
         })
             .then(async (res) => {
-                if (res.status) {
+                if (res.data.status) {
                     await wallet.callMethod({
                         method: 'ChooseFreelancer',
                         args: data,
@@ -78,7 +79,7 @@ function WorkProposals() {
                     setError({ status: false })
                     setOpenModalAlert(true)
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res?.data?.message })
                 }
             })
             .catch((res) => {
@@ -134,7 +135,7 @@ function WorkProposals() {
                                                     sx={{ '--Avatar-size': '4rem' }}
                                                 />
                                                 <Box>
-                                                    <h5 className={cx('talent-name')}>{proposal.user.accountId}</h5>
+                                                    <h5 className={cx('talent-name')}>tilux.testnet</h5>
                                                     <h6 className={cx('talent-role')}>Blockchain Developer</h6>
                                                 </Box>
                                             </Box>
@@ -181,7 +182,7 @@ function WorkProposals() {
                                                     </Button>
                                                     <Button
                                                         onClick={() => {
-                                                            chooseFreelancerHandler(proposal.user.id)
+                                                            chooseFreelancerHandler(proposal.userId)
                                                         }}
                                                     >
                                                         Choose
