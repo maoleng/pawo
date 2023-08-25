@@ -58,9 +58,9 @@ function SendProposal() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({ method: 'RegisterJob', args: data, contractId })
+                    await wallet.callMethod({ method: 'RegisterJob', args: data, contractId })
                     setError({ status: false })
                     setOpenModalAlert(true)
                 } else {

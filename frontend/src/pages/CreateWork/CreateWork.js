@@ -64,12 +64,13 @@ function CreateWork() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({
+                    await wallet.callMethod({
                         method: 'CreateJob',
                         args: data,
                         contractId,
+                        gas: '10000000000000',
                     })
                     setError({ status: false })
                     setOpenCreateModal(true)
@@ -111,9 +112,9 @@ function CreateWork() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({
+                    await wallet.callMethod({
                         method: 'UpdateJob',
                         args: data,
                         contractId,
@@ -146,9 +147,9 @@ function CreateWork() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({
+                    await wallet.callMethod({
                         method: 'DeleteJob',
                         args: {
                             id: workId,

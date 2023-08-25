@@ -68,9 +68,9 @@ function WorkProposals() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({
+                    await wallet.callMethod({
                         method: 'ChooseFreelancer',
                         args: data,
                         contractId,

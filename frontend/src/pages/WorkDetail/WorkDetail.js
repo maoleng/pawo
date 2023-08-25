@@ -63,9 +63,9 @@ function WorkDetail() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({
+                    await wallet.callMethod({
                         method: 'VerifyPaymentRequest',
                         args: data,
                         contractId,
@@ -102,9 +102,9 @@ function WorkDetail() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({
+                    await wallet.callMethod({
                         method: 'SetJobDeadline',
                         args: {
                             jobId: work.id,
@@ -147,9 +147,9 @@ function WorkDetail() {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
+            .then(async (res) => {
                 if (res.status) {
-                    wallet.callMethod({
+                    await wallet.callMethod({
                         method: 'Evaluate',
                         args: data,
                         contractId,

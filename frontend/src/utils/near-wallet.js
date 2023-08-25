@@ -9,7 +9,7 @@ import { setupModal } from '@near-wallet-selector/modal-ui'
 import { setupWalletSelector } from '@near-wallet-selector/core'
 import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet'
 
-const THIRTY_TGAS = '30000000000000'
+const THIRTY_TGAS = '3000000000000'
 const NO_DEPOSIT = '0'
 
 // Wallet that simplifies using the wallet selector
