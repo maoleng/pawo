@@ -15,13 +15,16 @@ import AspectRatio from '@mui/joy/AspectRatio'
 import Typography from '@mui/joy/Typography'
 import Button from '@mui/joy/Button'
 import { DocumentFolderRegular, EditRegular, DeleteRegular } from '@fluentui/react-icons'
+
 import { WalletContext } from '../../App'
 import Banner from '../../pages/components/Banner'
+import ErrorMessage from '../../pages/components/ErrorMessage'
 import ModalAlert from '../../pages/components/ModalAlert'
 import ModalEdit from '../../pages/components/ModalEdit'
 import ModalLoading from '../../pages/components/ModalLoading'
 import ModalRating from '../../pages/components/ModalRating'
 import config from '../../config'
+import { axiosInstance } from '../../utils/axiosInstance'
 import styles from './WorkDetail.module.scss'
 
 const cx = classNames.bind(styles)
@@ -33,90 +36,137 @@ function WorkDetail() {
     const [openModalEdit, setOpenModalEdit] = useState(false)
     const [openModalLoading, setOpenModalLoading] = useState(false)
     const [openModalRating, setOpenModalRating] = useState(false)
+    const [openModalRatingLoading, setOpenModalRatingLoading] = useState(false)
     const [openModalRatingSuccess, setOpenModalRatingSuccess] = useState(false)
     const [isBtnLoading, setIsBtnLoading] = useState(false)
     const [workDueDateTime, setWorkDueDateTime] = useState('')
+    const [error, setError] = useState({ status: false, message: '' })
+
     const { state } = useLocation()
 
     useEffect(() => {
         setWork({ ...state?.work })
-        // wallet
-        //     .viewMethod({
-        //         method: 'GetJob',
-        //         args: {
-        //             id: state?.work?.id,
-        //         },
-        //         contractId,
-        //     })
-        //     .then((res) => {
-        //         console.log(res)
-        //         setWork({ ...state?.work })
-        //     })
     }, [])
 
-    const payWorkHandler = (e) => {
+    const payWorkHandler = async (e) => {
         e.preventDefault()
         setOpenModalLoading(true)
+        const data = {
+            id: work?.id,
+        }
 
-        wallet
-            .callMethod({
-                method: 'VerifyPaymentRequest',
-                args: {
-                    id: work?.id,
-                },
-                contractId,
+        await axiosInstance({
+            method: 'POST',
+            url: `job/verify_payment/${data.id}`,
+            data: data,
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'VerifyPaymentRequest',
+                        args: data,
+                        contractId,
+                    })
+                    setError({ status: false })
+                } else {
+                    setError({ status: true, message: res?.message })
+                    setOpenModalAlert(true)
+                }
             })
-            .then(async (res) => {
+            .catch((res) => {
                 console.log(res)
-                setOpenModalAlert(true)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalLoading(false)
             })
     }
 
-    const changeDueDateHandler = (e) => {
+    const changeDueDateHandler = async (e) => {
         e.preventDefault()
         setIsBtnLoading(true)
         const dateTime = e.target.elements[0].value + ' ' + e.target.elements[1].value + ':59'
+        const data = {
+            jobId: work.id,
+            deadline: new Date(dateTime).toISOString(),
+        }
 
-        wallet
-            .callMethod({
-                method: 'SetJobDeadline',
-                args: {
-                    jobId: work.id,
-                    deadline: new Date(dateTime).toISOString(),
-                },
-                contractId,
+        await axiosInstance({
+            method: 'PUT',
+            url: `job/${data.id}`,
+            data: { deadline: data.deadline },
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'SetJobDeadline',
+                        args: {
+                            jobId: work.id,
+                            deadline: new Date(dateTime).toISOString(),
+                        },
+                        contractId,
+                    })
+                    setError({ status: false })
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
-            .then(async (res) => {
+            .catch((res) => {
                 console.log(res)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
                 setWorkDueDateTime(format(new Date(dateTime), 'iii, MMM do uuuu, kk:mm'))
                 setIsBtnLoading(false)
                 setOpenModalEdit(false)
             })
     }
 
-    const rateFreelancerHandler = (e) => {
+    const rateFreelancerHandler = async (e) => {
         e.preventDefault()
+        setOpenModalRatingLoading(true)
         const { commentRating, starRating } = e.target.elements
+        const data = {
+            userId: work?.freelancer?.id,
+            jobId: work?.id,
+            star: starRating.value,
+            message: commentRating.value,
+        }
 
-        wallet
-            .callMethod({
-                method: 'Evaluate',
-                args: {
-                    userId: work?.freelancer?.id,
-                    jobId: work?.id,
-                    star: starRating.value,
-                    message: commentRating.value,
-                },
-                contractId,
-            })
-            .then(async (res) => {
-                // return getGreeting()
-                console.log(res)
-                setOpenModalRating(false)
-                setOpenModalRatingSuccess(true)
+        await axiosInstance({
+            method: 'POST',
+            url: '/evaluation',
+            data: data,
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'Evaluate',
+                        args: data,
+                        contractId,
+                    })
+                    setError({ status: false })
+                    setOpenModalRatingSuccess(true)
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
             .catch((res) => {
                 console.log(res)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalRatingLoading(false)
+                setOpenModalRating(false)
             })
     }
 
@@ -143,6 +193,12 @@ function WorkDetail() {
                     <Col xs={12} className={cx('banner-wrapper')}>
                         <Banner title="Work Detail" />
                     </Col>
+
+                    {error.status && (
+                        <Col xs={12}>
+                            <ErrorMessage message={error.message} />
+                        </Col>
+                    )}
 
                     {/* Works detail */}
                     <Col xs={12} lg={8}>
@@ -206,30 +262,17 @@ function WorkDetail() {
                                                             marginTop: '10px',
                                                         }}
                                                     >
-                                                        <Chip
-                                                            variant="soft"
-                                                            color="neutral"
-                                                            size="lg"
-                                                            sx={{ pointerEvents: 'none' }}
-                                                        >
-                                                            {work?.category}
-                                                        </Chip>
-                                                        <Chip
-                                                            variant="soft"
-                                                            color="neutral"
-                                                            size="lg"
-                                                            sx={{ pointerEvents: 'none' }}
-                                                        >
-                                                            AI
-                                                        </Chip>
-                                                        <Chip
-                                                            variant="soft"
-                                                            color="neutral"
-                                                            size="lg"
-                                                            sx={{ pointerEvents: 'none' }}
-                                                        >
-                                                            UI/UX
-                                                        </Chip>
+                                                        {work.categories.map((category, index) => (
+                                                            <Chip
+                                                                variant="soft"
+                                                                color="neutral"
+                                                                size="lg"
+                                                                sx={{ pointerEvents: 'none' }}
+                                                                key={index}
+                                                            >
+                                                                {category}
+                                                            </Chip>
+                                                        ))}
                                                     </Box>
                                                 </Col>
                                             </Row>
@@ -369,8 +412,8 @@ function WorkDetail() {
                 open={openModalLoading}
                 setOpen={setOpenModalLoading}
                 isLoading={isBtnLoading}
-                title="Sending"
-                message="We are preparing your work to be published."
+                title="Loading"
+                message="Your transaction is being processing."
             />
             <ModalAlert
                 open={openModalRatingSuccess}
@@ -385,6 +428,12 @@ function WorkDetail() {
                 title="Review your client"
                 message="Please review your client to enhance your network."
                 submitFormHandler={rateFreelancerHandler}
+            />
+            <ModalLoading
+                open={openModalRatingLoading}
+                setOpen={setOpenModalRatingLoading}
+                title="Sending"
+                message="We are preparing your review to be sent."
             />
         </div>
     )

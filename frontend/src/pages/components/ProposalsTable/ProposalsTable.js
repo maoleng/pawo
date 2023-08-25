@@ -31,6 +31,7 @@ import {
 } from '@fluentui/react-icons'
 import { WalletContext } from '../../../App'
 import config from '../../../config'
+import { axiosInstance } from '../../../utils/axiosInstance'
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -71,6 +72,9 @@ function ProposalsTable() {
     const [selected, setSelected] = useState([])
     const [openFilter, setOpenFilter] = useState(false)
 
+    console.log(userId)
+    console.log(proposalList)
+
     useEffect(() => {
         getAllProposalsByAccountId()
             .then((res) => {
@@ -88,7 +92,17 @@ function ProposalsTable() {
         // })
     }, [])
 
-    const getAllProposalsByAccountId = () => {
+    const getAllProposalsByAccountId = async () => {
+        // await axiosInstance({
+        //     method: 'GET',
+        //     url: `/job_user`,
+        // })
+        //     .then((res) => {
+
+        //     })
+        //     .catch((res) => {
+        //         console.log(res)
+        //     })
         return wallet.viewMethod({ method: 'GetJobRegisteredByUser', args: { id: userId }, contractId })
     }
 

@@ -68,6 +68,8 @@ function WorksTable() {
     const [selected, setSelected] = useState([])
     const [openFilter, setOpenFilter] = useState(false)
 
+    console.log(userId)
+
     useEffect(() => {
         getAllJobByCreator()
             .then((res) => {

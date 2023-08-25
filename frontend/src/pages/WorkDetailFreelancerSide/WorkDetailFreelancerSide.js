@@ -18,9 +18,12 @@ import { DocumentFolderRegular } from '@fluentui/react-icons'
 
 import { WalletContext } from '../../App'
 import Banner from '../../pages/components/Banner'
+import ErrorMessage from '../../pages/components/ErrorMessage'
 import ModalAlert from '../../pages/components/ModalAlert'
 import ModalRating from '../../pages/components/ModalRating'
+import ModalLoading from '../../pages/components/ModalLoading'
 import config from '../../config'
+import { axiosInstance } from '../../utils/axiosInstance'
 import styles from './WorkDetailFreelancerSide.module.scss'
 
 const cx = classNames.bind(styles)
@@ -31,6 +34,10 @@ function WorkDetailFreelancerSide() {
     const [openModalSubmitProduct, setOpenModalSubmitProduct] = useState(false)
     const [openModalRating, setOpenModalRating] = useState(false)
     const [openModalRatingSuccess, setOpenModalRatingSuccess] = useState(false)
+    const [openModalRequestLoading, setOpenModalRequestLoading] = useState(false)
+    const [openModalRatingLoading, setOpenModalRatingLoading] = useState(false)
+    const [error, setError] = useState({ status: false, message: '' })
+
     const { state } = useLocation()
 
     useEffect(() => {
@@ -38,48 +45,75 @@ function WorkDetailFreelancerSide() {
         setWork({ ...state?.work })
     }, [])
 
-    const submitProductHandler = (e) => {
+    const submitProductHandler = async (e) => {
         e.preventDefault()
+        setOpenModalRequestLoading(true)
+        const data = { id: state?.work.id }
 
-        wallet
-            .callMethod({ method: 'SendPaymentRequest', args: { id: state?.work.id }, contractId })
-            .then(async (res) => {
-                // return getGreeting()
+        await axiosInstance({
+            method: 'POST',
+            url: `job/request_payment/${data.id}`,
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({ method: 'SendPaymentRequest', args: data, contractId })
+                    setError({ status: false })
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
+            })
+            .catch((res) => {
                 console.log(res)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalRequestLoading(false)
                 setOpenModalSubmitProduct(true)
             })
-            .catch((res) => {
-                console.log(res)
-            })
-        // .then(setValueFromBlockchain)
-        // .finally(() => {
-        //     setUiPleaseWait(false)
-        // })
     }
 
-    const rateEmployerHandler = (e) => {
+    const rateEmployerHandler = async (e) => {
         e.preventDefault()
+        setOpenModalRatingLoading(true)
         const { commentRating, starRating } = e.target.elements
+        const data = {
+            userId: work?.creator?.id,
+            jobId: work?.id,
+            star: starRating.value,
+            message: commentRating.value,
+        }
 
-        wallet
-            .callMethod({
-                method: 'Evaluate',
-                args: {
-                    userId: work?.creator?.id,
-                    jobId: work?.id,
-                    star: starRating.value,
-                    message: commentRating.value,
-                },
-                contractId,
-            })
-            .then(async (res) => {
-                // return getGreeting()
-                console.log(res)
-                setOpenModalRating(false)
-                setOpenModalRatingSuccess(true)
+        await axiosInstance({
+            method: 'POST',
+            url: '/evaluation',
+            data: data,
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'Evaluate',
+                        args: data,
+                        contractId,
+                    })
+                    setError({ status: false })
+                    setOpenModalRatingSuccess(true)
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
             .catch((res) => {
                 console.log(res)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalRatingLoading(false)
+                setOpenModalRating(false)
             })
     }
 
@@ -106,6 +140,12 @@ function WorkDetailFreelancerSide() {
                     <Col xs={12} className={cx('banner-wrapper')}>
                         <Banner title="Work Detail" />
                     </Col>
+
+                    {error.status && (
+                        <Col xs={12}>
+                            <ErrorMessage message={error.message} />
+                        </Col>
+                    )}
 
                     {/* Works detail */}
                     <Col xs={12} lg={8}>
@@ -143,7 +183,8 @@ function WorkDetailFreelancerSide() {
                                                                     }[
                                                                         state?.work.status === '1'
                                                                             ? 'Processing'
-                                                                            : state?.work.status === '2' || state?.work.status === '4'
+                                                                            : state?.work.status === '2' ||
+                                                                              state?.work.status === '4'
                                                                             ? 'Pending'
                                                                             : 'Cancelled'
                                                                     ]
@@ -330,6 +371,18 @@ function WorkDetailFreelancerSide() {
                 title="Review your client"
                 message="Please review your client to enhance your network."
                 submitFormHandler={rateEmployerHandler}
+            />
+            <ModalLoading
+                open={openModalRequestLoading}
+                setOpen={setOpenModalRequestLoading}
+                title="Sending"
+                message="We are preparing your work to be sent."
+            />
+            <ModalLoading
+                open={openModalRatingLoading}
+                setOpen={setOpenModalRatingLoading}
+                title="Sending"
+                message="We are preparing your review to be sent."
             />
         </div>
     )

@@ -18,9 +18,12 @@ import Divider from '@mui/joy/Divider'
 import Typography from '@mui/joy/Typography'
 
 import { WalletContext } from '../../App'
-import ModalAlert from '../../pages/components/ModalAlert'
 import Banner from '../../pages/components/Banner'
+import ErrorMessage from '../../pages/components/ErrorMessage'
+import ModalAlert from '../../pages/components/ModalAlert'
+import ModalLoading from '../../pages/components/ModalLoading'
 import config from '../../config'
+import { axiosInstance } from '../../utils/axiosInstance'
 import styles from './WorkProposals.module.scss'
 
 const cx = classNames.bind(styles)
@@ -28,7 +31,10 @@ const cx = classNames.bind(styles)
 function WorkProposals() {
     const { contractId, wallet } = useContext(WalletContext)
     const [proposals, setProposals] = useState([])
-    const [openModal, setOpenModal] = useState(false)
+    const [openModalAlert, setOpenModalAlert] = useState(false)
+    const [openModalLoading, setOpenModalLoading] = useState(false)
+    const [error, setError] = useState({ status: false, message: '' })
+
     const { state } = useLocation()
 
     useEffect(() => {
@@ -42,9 +48,6 @@ function WorkProposals() {
             .catch((alert) => {
                 console.log(alert)
             })
-        // .finally(() => {
-        //     setUiPleaseWait(false)
-        // })
     }, [])
 
     const getAllProposalsOfThisJob = (work) => {
@@ -52,23 +55,39 @@ function WorkProposals() {
         return wallet.viewMethod({ method: 'GetJobRegister', contractId, args: { id: work?.id } })
     }
 
-    const chooseFreelancerHandler = (freelancerId) => {
+    const chooseFreelancerHandler = async (freelancerId) => {
         console.log(freelancerId)
-        wallet
-            .callMethod({
-                method: 'ChooseFreelancer',
-                args: { userId: freelancerId, jobId: state?.work.id },
-                contractId,
+        setOpenModalLoading(true)
+        const data = { userId: freelancerId, jobId: state?.work.id }
+
+        await axiosInstance({
+            method: 'POST',
+            url: `job/choose/${data.jobId}`,
+            data: { userId: data.userId },
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'ChooseFreelancer',
+                        args: data,
+                        contractId,
+                    })
+                    setError({ status: false })
+                    setOpenModalAlert(true)
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
-            .then(async (res) => {
-                // return getGreeting()
+            .catch((res) => {
                 console.log(res)
-                setOpenModal(true)
+                setError({ status: true, message: res?.message })
             })
-        // .then(setValueFromBlockchain)
-        // .finally(() => {
-        //     setUiPleaseWait(false)
-        // })
+            .finally(() => {
+                setOpenModalLoading(false)
+            })
     }
 
     return (
@@ -79,6 +98,12 @@ function WorkProposals() {
                     <Col xs={12} className={cx('banner-wrapper')}>
                         <Banner title="Browse Work" />
                     </Col>
+
+                    {error.status && (
+                        <Col xs={12}>
+                            <ErrorMessage message={error.message} />
+                        </Col>
+                    )}
 
                     {/* Works grid */}
                     <Col xs={12} md={8}>
@@ -249,10 +274,16 @@ function WorkProposals() {
                 </Row>
             </Container>
             <ModalAlert
-                open={openModal}
-                setOpen={setOpenModal}
+                open={openModalAlert}
+                setOpen={setOpenModalAlert}
                 message="You and this talents are connected. Hope both of you have a great journey."
                 backPath={config.routes.workDashboard}
+            />
+            <ModalLoading
+                open={openModalLoading}
+                setOpen={setOpenModalLoading}
+                title="Sending"
+                message="We are preparing your proposal to be sent."
             />
         </div>
     )

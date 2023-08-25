@@ -132,7 +132,7 @@ function Header() {
                                     >
                                         <MenuItem>
                                             <CheckmarkCircleRegular />
-                                            wallet.accountId
+                                            {wallet.accountId}
                                         </MenuItem>
                                         <Divider insert="none" sx={{ '--Divider-lineColor': 'rgb( 115 115 140)' }} />
                                         <Link to={config.routes.profile}>

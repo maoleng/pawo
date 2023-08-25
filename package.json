@@ -16,5 +16,10 @@
   "devDependencies": {
     "near-cli": "^3.3.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "buffer": "^5.5.0",
+    "events": "^3.3.0",
+    "parcel": "^2.9.3",
+    "util": "^0.12.5"
+  }
 }

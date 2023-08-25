@@ -23,8 +23,11 @@ import { DeleteRegular } from '@fluentui/react-icons'
 
 import { WalletContext } from '../../App'
 import Banner from '../../pages/components/Banner'
+import ErrorMessage from '../../pages/components/ErrorMessage'
 import ModalAlert from '../../pages/components/ModalAlert'
+import ModalLoading from '../../pages/components/ModalLoading'
 import config from '../../config'
+import { axiosInstance } from '../../utils/axiosInstance'
 import styles from './CreateWork.module.scss'
 
 const cx = classNames.bind(styles)
@@ -35,66 +38,134 @@ function CreateWork() {
     const [openCreateModal, setOpenCreateModal] = useState(false)
     const [openUpdateModal, setOpenUpdateModal] = useState(false)
     const [openDeleteModal, setOpenDeleteModal] = useState(false)
+    const [openModalCreateLoading, setOpenModalCreateLoading] = useState(false)
+    const [openModalUpdateLoading, setOpenModalUpdateLoading] = useState(false)
+    const [openModalDeleteLoading, setOpenModalDeleteLoading] = useState(false)
+    const [error, setError] = useState({ status: false, message: '' })
+
     const { state } = useLocation()
 
-    const createWorkHandler = (e) => {
+    const createWorkHandler = async (e) => {
         e.preventDefault()
+        setOpenModalCreateLoading(true)
         const { workTitle, workCategory, workDesc, workDue, workBudget } = e.target.elements
+        const data = {
+            title: workTitle.value,
+            description: workDesc.value,
+            categories: [workCategory.value],
+            money: workBudget.value,
+        }
 
-        wallet
-            .callMethod({
-                method: 'CreateJob',
-                args: {
-                    title: workTitle.value,
-                    description: workDesc.value,
-                    categories: [workCategory.value],
-                    money: workBudget.value,
-                },
-                contractId,
+        await axiosInstance({
+            method: 'POST',
+            url: 'job',
+            data: data,
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'CreateJob',
+                        args: data,
+                        contractId,
+                    })
+                    setError({ status: false })
+                    setOpenCreateModal(true)
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
-            .then(async (res) => {
+            .catch((res) => {
                 console.log(res)
-                setOpenCreateModal(true)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalCreateLoading(false)
             })
     }
 
-    const updateWorkHandler = (e) => {
-        console.log(state?.work?.id)
+    const updateWorkHandler = async (e) => {
         e.preventDefault()
+        setOpenModalUpdateLoading(true)
         const { workTitleUpdate, workDescUpdate, workDueUpdate, workBudgetUpdate } = e.target.elements
+        const data = {
+            id: state?.work?.id,
+            title: workTitleUpdate.value,
+            description: workDescUpdate.value,
+            categories: [...state?.work?.categories],
+            money: workBudgetUpdate.value,
+        }
 
-        wallet
-            .callMethod({
-                method: 'UpdateJob',
-                args: {
-                    id: state?.work?.id,
-                    title: workTitleUpdate.value,
-                    description: workDescUpdate.value,
-                    categories: [...state?.work?.categories],
-                    money: workBudgetUpdate.value,
-                },
-                contractId,
+        await axiosInstance({
+            method: 'PUT',
+            url: `job/${data.id}`,
+            data: {
+                title: data.title,
+                description: data.description,
+                categories: [...data.categories],
+                money: data.money,
+            },
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'UpdateJob',
+                        args: data,
+                        contractId,
+                    })
+                    setError({ status: false })
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
-            .then(async (res) => {
+            .catch((res) => {
                 console.log(res)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalUpdateLoading(false)
                 setOpenUpdateModal(true)
             })
     }
 
-    const deleteWorkHandler = (e) => {
+    const deleteWorkHandler = async (e) => {
         console.log(state?.work?.id)
         e.preventDefault()
+        setOpenModalDeleteLoading(true)
+        const workId = state?.work?.id
 
-        wallet
-            .callMethod({
-                method: 'DeleteJob',
-                args: {
-                    id: state?.work?.id,
-                },
-                contractId,
+        await axiosInstance({
+            method: 'DELETE',
+            url: `job/${workId}`,
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({
+                        method: 'DeleteJob',
+                        args: {
+                            id: workId,
+                        },
+                        contractId,
+                    })
+                    setError({ status: false })
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
-            .then(async (res) => {
+            .catch((res) => {
                 console.log(res)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalDeleteLoading(false)
                 setOpenDeleteModal(true)
             })
     }
@@ -225,6 +296,7 @@ function CreateWork() {
                                                     Save and Post
                                                 </button>
                                             </CardActions>
+                                            {error.status && <ErrorMessage message={error.message} />}
                                         </CardContent>
                                     </form>
                                 </Card>
@@ -358,6 +430,7 @@ function CreateWork() {
                                                     Update work
                                                 </button>
                                             </CardActions>
+                                            {error.status && <ErrorMessage message={error.message} />}
                                         </CardContent>
                                     </form>
                                 </Card>
@@ -412,6 +485,24 @@ function CreateWork() {
                 title="Update Successfully"
                 message="You've just deleted your work. Hope to see your new work soon."
                 backPath={config.routes.workDashboard}
+            />
+            <ModalLoading
+                open={openModalCreateLoading}
+                setOpen={setOpenModalCreateLoading}
+                title="Posting"
+                message="We are preparing your work to be published."
+            />
+            <ModalLoading
+                open={openModalUpdateLoading}
+                setOpen={setOpenModalUpdateLoading}
+                title="Updating"
+                message="We are preparing your work to be updated."
+            />
+            <ModalLoading
+                open={openModalDeleteLoading}
+                setOpen={setOpenModalDeleteLoading}
+                title="Deleting"
+                message="We are preparing your work to be removed."
             />
         </div>
     )

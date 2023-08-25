@@ -21,9 +21,11 @@ import Typography from '@mui/joy/Typography'
 
 import { WalletContext } from '../../App'
 import Banner from '../../pages/components/Banner'
+import ErrorMessage from '../../pages/components/ErrorMessage'
 import ModalAlert from '../../pages/components/ModalAlert'
 import ModalLoading from '../../pages/components/ModalLoading'
 import config from '../../config'
+import { axiosInstance } from '../../utils/axiosInstance'
 import styles from './SendProposal.module.scss'
 
 const cx = classNames.bind(styles)
@@ -34,32 +36,44 @@ function SendProposal() {
     const [currency, setCurrency] = useState('dollar')
     const [openModalAlert, setOpenModalAlert] = useState(false)
     const [openModalLoading, setOpenModalLoading] = useState(false)
+    const [error, setError] = useState({ status: false, message: '' })
+
     const { state } = useLocation()
 
     useEffect(() => {
         setWork({ ...state?.work })
     }, [])
 
-    const sendProposalHandler = (e) => {
+    const sendProposalHandler = async (e) => {
         e.preventDefault()
         setOpenModalLoading(true)
         const { workCoverLetter } = e.target.elements
-        console.log(workCoverLetter.value)
-        console.log(work.id)
+        const data = { id: work.id, message: workCoverLetter.value }
 
-        // use the wallet to send the greeting to the contract
-        wallet
-            .callMethod({ method: 'RegisterJob', args: { id: work.id, message: workCoverLetter.value }, contractId })
-            .then(async (res) => {
-                // return getGreeting()
-                setOpenModalLoading(false)
-                setOpenModalAlert(true)
-                console.log(res)
+        await axiosInstance({
+            method: 'POST',
+            url: `job/register/${data.id}`,
+            data: { message: data.message },
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                if (res.status) {
+                    wallet.callMethod({ method: 'RegisterJob', args: data, contractId })
+                    setError({ status: false })
+                    setOpenModalAlert(true)
+                } else {
+                    setError({ status: true, message: res?.message })
+                }
             })
-        // .then(setValueFromBlockchain)
-        // .finally(() => {
-        //     setUiPleaseWait(false)
-        // })
+            .catch((res) => {
+                console.log(res)
+                setError({ status: true, message: res?.message })
+            })
+            .finally(() => {
+                setOpenModalLoading(false)
+            })
     }
 
     return (
@@ -86,13 +100,13 @@ function SendProposal() {
                                     <Box>
                                         <Row>
                                             <Col xs={12}>
-                                                <h5 className={cx('work-title')}>{work.title}</h5>
+                                                <h5 className={cx('work-title')}>{state?.work.title}</h5>
                                             </Col>
                                             <Col xs={12}>
                                                 <small className={cx('work-subtitle')}>
                                                     <span
                                                         className={cx('work-subtitle_price')}
-                                                    >{`Fixed price: $${work?.money}`}</span>
+                                                    >{`Fixed price: $${state?.work.money}`}</span>
                                                     <span>
                                                         &nbsp;-&nbsp;<span>Entry level</span>
                                                     </span>
@@ -101,18 +115,20 @@ function SendProposal() {
                                         </Row>
                                     </Box>
                                     <Box>
-                                        <p className={cx('work-desc')}>{work?.description}</p>
+                                        <p className={cx('work-desc')}>{state?.work?.description}</p>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                                        <Chip variant="soft" color="neutral" size="lg" sx={{ pointerEvents: 'none' }}>
-                                            {work?.category}
-                                        </Chip>
-                                        <Chip variant="soft" color="neutral" size="lg" sx={{ pointerEvents: 'none' }}>
-                                            AI
-                                        </Chip>
-                                        <Chip variant="soft" color="neutral" size="lg" sx={{ pointerEvents: 'none' }}>
-                                            UI/UX
-                                        </Chip>
+                                        {state?.work?.categories?.map((category, index) => (
+                                            <Chip
+                                                variant="soft"
+                                                color="neutral"
+                                                size="lg"
+                                                sx={{ pointerEvents: 'none' }}
+                                                key={index}
+                                            >
+                                                {category}
+                                            </Chip>
+                                        ))}
                                     </Box>
                                 </CardContent>
                             </Card>
@@ -209,6 +225,7 @@ function SendProposal() {
                                                 Send proposal
                                             </button>
                                         </CardActions>
+                                        {error.status && <ErrorMessage message={error.message} />}
                                     </CardContent>
                                 </form>
                             </Card>
@@ -255,7 +272,7 @@ function SendProposal() {
                 open={openModalLoading}
                 setOpen={setOpenModalLoading}
                 title="Sending"
-                message="We are preparing your work to be published."
+                message="We are preparing your proposal to be sent."
             />
         </div>
     )

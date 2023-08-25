@@ -8,6 +8,7 @@ import {
 } from '@mui/material/styles'
 import { CssVarsProvider as JoyCssVarsProvider } from '@mui/joy/styles'
 import { publicRoutes } from './routes'
+import { axiosInstance } from './utils/axiosInstance'
 
 const WalletContext = createContext()
 const materialTheme = materialExtendTheme()
@@ -15,26 +16,28 @@ const materialTheme = materialExtendTheme()
 function App({ isSignedIn, contractId, wallet }) {
     const [userId, setUserId] = useState(-1)
 
-    useEffect(() => {
-        wallet
-            .callMethod({ method: 'Register', contractId })
-            .then(async (res) => {
+    const registerUser = async () => {
+        await axiosInstance({
+            method: 'POST',
+            url: 'authed',
+            headers: {
+                Authorization: wallet.accountId,
+            },
+        })
+            .then((res) => {
+                const { data } = res
                 console.log(res)
+                if (data.status) {
+                    setUserId(data.data.id)
+                }
             })
             .catch((res) => {
                 console.log(res)
             })
+    }
 
-        getUser()
-            .then((res) => {
-                const { status, data } = JSON.parse(res)
-                if (status) {
-                    setUserId(data.id)
-                }
-            })
-            .catch((alert) => {
-                console.log(alert)
-            })
+    useEffect(() => {
+        registerUser()
     }, [])
 
     const getUser = () => {
