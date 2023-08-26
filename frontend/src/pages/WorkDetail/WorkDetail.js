@@ -132,7 +132,7 @@ function WorkDetail() {
                 setError({ status: true, message: res?.message })
             })
             .finally(() => {
-                setWorkDueDateTime(format(new Date(dateTime), 'iii, MMM do uuuu, kk:mm'))
+                setWorkDueDateTime(dateTime)
                 setIsBtnLoading(false)
                 setOpenModalEdit(false)
             })
