@@ -1,6 +1,5 @@
 import { Fragment, useState, useContext } from 'react'
 import { useLocation } from 'react-router-dom'
-import axios from 'axios'
 import classNames from 'classnames/bind'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
@@ -12,6 +11,7 @@ import CardContent from '@mui/joy/CardContent'
 import Divider from '@mui/joy/Divider'
 import FormControl from '@mui/joy/FormControl'
 import FormLabel from '@mui/joy/FormLabel'
+import FormHelperText from '@mui/joy/FormHelperText';
 import Input from '@mui/joy/Input'
 import Textarea from '@mui/joy/Textarea'
 import Select from '@mui/joy/Select'
@@ -53,7 +53,7 @@ function CreateWork() {
         const data = {
             title: workTitle.value,
             description: workDesc.value,
-            categories: [workCategory.value],
+            categories: workCategory.value.split(","),
             money: workBudget.value,
         }
 
@@ -219,6 +219,7 @@ function CreateWork() {
                                             </FormControl>
                                             <FormControl sx={{ gridColumn: '1/-1' }}>
                                                 <FormLabel>What is your work's category?</FormLabel>
+                                                <FormHelperText>"Use comma (,) to separate each category"</FormHelperText>
                                                 <Input
                                                     slotProps={{
                                                         input: {
@@ -455,7 +456,7 @@ function CreateWork() {
                                         PRO
                                     </Chip>
                                     <Typography fontSize="lg" fontWeight="lg" sx={{ mt: 1, mb: 0.5 }}>
-                                        Tien Le
+                                    {wallet.accountId}
                                     </Typography>
                                     <Typography level="body2" sx={{ maxWidth: '24ch' }}>
                                         Hello, this is my bio and I am a PRO member of Freelance dApp. I am a developer

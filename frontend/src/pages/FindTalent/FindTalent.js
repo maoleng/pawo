@@ -1,3 +1,4 @@
+import { useState, useEffect, useContext } from 'react'
 import classNames from 'classnames/bind'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
@@ -9,14 +10,36 @@ import Card from '@mui/joy/Card'
 import CardContent from '@mui/joy/CardContent'
 import CardOverflow from '@mui/joy/CardOverflow'
 import CardActions from '@mui/joy/CardActions'
+import Rating from '@mui/material/Rating'
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined'
 
+import { axiosInstance } from '../../utils/axiosInstance'
 import Banner from '../../pages/components/Banner'
+import LoadingSkeleton from '../../pages/components/LoadingSkeleton'
 import styles from './FindTalent.module.scss'
 
 const cx = classNames.bind(styles)
 
 function FindTalent() {
+    const [talentList, setTalentList] = useState(null)
+
+    useEffect(() => {
+        ;(async () => {
+            await axiosInstance({
+                method: 'GET',
+                url: `user?_fields=rate,accountId,starAsFreelancer,createdAt&_noPagination=1`,
+            })
+                .then((res) => {
+                    if (res.data.status) {
+                        setTalentList([...res.data.data])
+                    }
+                })
+                .catch((res) => {
+                    console.log(res)
+                })
+        })()
+    }, [])
+
     return (
         <div>
             <Container>
@@ -29,305 +52,100 @@ function FindTalent() {
                     {/* Talents grid */}
                     <Col xs={12}>
                         <Row>
-                            <Col xs={6} md={4} lg={3}>
-                                <Card
-                                    variant="outlined"
-                                    sx={{
-                                        width: '100%',
-                                    }}
-                                >
-                                    <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
-                                        <Avatar src="/static/images/avatar/1.jpg" sx={{ '--Avatar-size': '8rem' }} />
-                                        <Chip
-                                            size="lg"
-                                            variant="soft"
-                                            color="primary"
-                                            sx={{ mt: -1, border: '3px solid', borderColor: 'background.surface' }}
-                                        >
-                                            PRO
-                                        </Chip>
-                                        <h5 className={cx('talent-name')}>Josephine Blanton</h5>
-                                        <h6 className={cx('talent-role')}>Blockchain Developer</h6>
-                                        <p className={cx('talent-bio')}>
-                                            Hello, this is my bio and I am a PRO member of MUI. I am a developer and I
-                                            love to code.
-                                        </p>
-                                        <Box
+                            {talentList ? (
+                                talentList.map((talent) => (
+                                    <Col xs={6} md={4} lg={3}>
+                                        <Card
+                                            variant="outlined"
                                             sx={{
-                                                display: 'flex',
-                                                gap: 2,
-                                                mt: 1,
-                                                '& > button': { borderRadius: '2rem' },
+                                                width: '100%',
                                             }}
                                         >
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                BOS
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                React
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                Rust
-                                            </Chip>
-                                        </Box>
-                                    </CardContent>
-                                    <CardOverflow sx={{ mt: 2 }}>
-                                        <CardActions buttonFlex="1" sx={{ justifyContent: 'center' }}>
-                                            <button
-                                                className={cx(
-                                                    'contact-btn',
-                                                    'btn',
-                                                    'rounded-pill',
-                                                    'btn-outline-style',
-                                                )}
-                                            >
-                                                Contact
-                                                <MailOutlineOutlinedIcon />
-                                            </button>
-                                        </CardActions>
-                                    </CardOverflow>
-                                </Card>
-                            </Col>
-
-                            <Col xs={6} md={4} lg={3}>
-                                <Card
-                                    variant="outlined"
-                                    sx={{
-                                        width: '100%',
-                                    }}
-                                >
-                                    <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
-                                        <Avatar src="/static/images/avatar/1.jpg" sx={{ '--Avatar-size': '8rem' }} />
-                                        <Chip
-                                            size="lg"
-                                            variant="soft"
-                                            color="primary"
-                                            sx={{ mt: -1, border: '3px solid', borderColor: 'background.surface' }}
-                                        >
-                                            PRO
-                                        </Chip>
-                                        <h5 className={cx('talent-name')}>Josephine Blanton</h5>
-                                        <h6 className={cx('talent-role')}>Blockchain Developer</h6>
-                                        <p className={cx('talent-bio')}>
-                                            Hello, this is my bio and I am a PRO member of MUI. I am a developer and I
-                                            love to code.
-                                        </p>
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                gap: 2,
-                                                mt: 1,
-                                                '& > button': { borderRadius: '2rem' },
-                                            }}
-                                        >
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                BOS
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                React
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                Rust
-                                            </Chip>
-                                        </Box>
-                                    </CardContent>
-                                    <CardOverflow sx={{ mt: 2 }}>
-                                        <CardActions buttonFlex="1" sx={{ justifyContent: 'center' }}>
-                                            <button
-                                                className={cx(
-                                                    'contact-btn',
-                                                    'btn',
-                                                    'rounded-pill',
-                                                    'btn-outline-style',
-                                                )}
-                                            >
-                                                Contact
-                                                <MailOutlineOutlinedIcon />
-                                            </button>
-                                        </CardActions>
-                                    </CardOverflow>
-                                </Card>
-                            </Col>
-
-                            <Col xs={6} md={4} lg={3}>
-                                <Card
-                                    variant="outlined"
-                                    sx={{
-                                        width: '100%',
-                                    }}
-                                >
-                                    <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
-                                        <Avatar src="/static/images/avatar/1.jpg" sx={{ '--Avatar-size': '8rem' }} />
-                                        <Chip
-                                            size="lg"
-                                            variant="soft"
-                                            color="primary"
-                                            sx={{ mt: -1, border: '3px solid', borderColor: 'background.surface' }}
-                                        >
-                                            PRO
-                                        </Chip>
-                                        <h5 className={cx('talent-name')}>Josephine Blanton</h5>
-                                        <h6 className={cx('talent-role')}>Blockchain Developer</h6>
-                                        <p className={cx('talent-bio')}>
-                                            Hello, this is my bio and I am a PRO member of MUI. I am a developer and I
-                                            love to code.
-                                        </p>
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                gap: 2,
-                                                mt: 1,
-                                                '& > button': { borderRadius: '2rem' },
-                                            }}
-                                        >
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                BOS
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                React
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                Rust
-                                            </Chip>
-                                        </Box>
-                                    </CardContent>
-                                    <CardOverflow sx={{ mt: 2 }}>
-                                        <CardActions buttonFlex="1" sx={{ justifyContent: 'center' }}>
-                                            <button
-                                                className={cx(
-                                                    'contact-btn',
-                                                    'btn',
-                                                    'rounded-pill',
-                                                    'btn-outline-style',
-                                                )}
-                                            >
-                                                Contact
-                                                <MailOutlineOutlinedIcon />
-                                            </button>
-                                        </CardActions>
-                                    </CardOverflow>
-                                </Card>
-                            </Col>
-
-                            <Col xs={6} md={4} lg={3}>
-                                <Card
-                                    variant="outlined"
-                                    sx={{
-                                        width: '100%',
-                                    }}
-                                >
-                                    <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
-                                        <Avatar src="/static/images/avatar/1.jpg" sx={{ '--Avatar-size': '8rem' }} />
-                                        <Chip
-                                            size="lg"
-                                            variant="soft"
-                                            color="primary"
-                                            sx={{ mt: -1, border: '3px solid', borderColor: 'background.surface' }}
-                                        >
-                                            PRO
-                                        </Chip>
-                                        <h5 className={cx('talent-name')}>Josephine Blanton</h5>
-                                        <h6 className={cx('talent-role')}>Blockchain Developer</h6>
-                                        <p className={cx('talent-bio')}>
-                                            Hello, this is my bio and I am a PRO member of MUI. I am a developer and I
-                                            love to code.
-                                        </p>
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                gap: 2,
-                                                mt: 1,
-                                                '& > button': { borderRadius: '2rem' },
-                                            }}
-                                        >
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                BOS
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                React
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                Rust
-                                            </Chip>
-                                        </Box>
-                                    </CardContent>
-                                    <CardOverflow sx={{ mt: 2 }}>
-                                        <CardActions buttonFlex="1" sx={{ justifyContent: 'center' }}>
-                                            <button
-                                                className={cx(
-                                                    'contact-btn',
-                                                    'btn',
-                                                    'rounded-pill',
-                                                    'btn-outline-style',
-                                                )}
-                                            >
-                                                Contact
-                                                <MailOutlineOutlinedIcon />
-                                            </button>
-                                        </CardActions>
-                                    </CardOverflow>
-                                </Card>
-                            </Col>
+                                            <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
+                                                <Avatar
+                                                    src="/static/images/avatar/1.jpg"
+                                                    sx={{ '--Avatar-size': '8rem' }}
+                                                />
+                                                <Chip
+                                                    size="lg"
+                                                    variant="soft"
+                                                    color="primary"
+                                                    sx={{
+                                                        mt: -1,
+                                                        border: '3px solid',
+                                                        borderColor: 'background.surface',
+                                                    }}
+                                                >
+                                                    PRO
+                                                </Chip>
+                                                <h5 className={cx('talent-name')}>{talent.accountId}</h5>
+                                                <h6 className={cx('talent-role')}>Blockchain Developer</h6>
+                                                <Box sx={{ my: 1 }}>
+                                                    <Rating
+                                                        value={talent.starAsFreelancer}
+                                                        readOnly
+                                                        sx={{ color: '#1100ff' }}
+                                                    />
+                                                </Box>
+                                                <p className={cx('talent-bio')}>
+                                                    Hello, this is my bio and I am a PRO member of MUI. I am a developer
+                                                    and I love to code.
+                                                </p>
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        gap: 2,
+                                                        mt: 1,
+                                                        '& > button': { borderRadius: '2rem' },
+                                                    }}
+                                                >
+                                                    <Chip
+                                                        variant="soft"
+                                                        color="neutral"
+                                                        size="lg"
+                                                        sx={{ pointerEvents: 'none' }}
+                                                    >
+                                                        BOS
+                                                    </Chip>
+                                                    <Chip
+                                                        variant="soft"
+                                                        color="neutral"
+                                                        size="lg"
+                                                        sx={{ pointerEvents: 'none' }}
+                                                    >
+                                                        React
+                                                    </Chip>
+                                                    <Chip
+                                                        variant="soft"
+                                                        color="neutral"
+                                                        size="lg"
+                                                        sx={{ pointerEvents: 'none' }}
+                                                    >
+                                                        Rust
+                                                    </Chip>
+                                                </Box>
+                                            </CardContent>
+                                            <CardOverflow sx={{ mt: 2 }}>
+                                                <CardActions buttonFlex="1" sx={{ justifyContent: 'center' }}>
+                                                    <button
+                                                        className={cx(
+                                                            'contact-btn',
+                                                            'btn',
+                                                            'rounded-pill',
+                                                            'btn-outline-style',
+                                                        )}
+                                                    >
+                                                        Contact
+                                                        <MailOutlineOutlinedIcon />
+                                                    </button>
+                                                </CardActions>
+                                            </CardOverflow>
+                                        </Card>
+                                    </Col>
+                                ))
+                            ) : (
+                                <LoadingSkeleton />
+                            )}
                         </Row>
                     </Col>
                 </Row>

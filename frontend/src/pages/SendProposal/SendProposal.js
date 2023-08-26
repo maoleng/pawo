@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect, useContext } from 'react'
 import { useLocation } from 'react-router-dom'
+import format from 'date-fns/format'
 import classNames from 'classnames/bind'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
@@ -185,17 +186,6 @@ function SendProposal() {
                                             />
                                         </FormControl>
                                         <FormControl sx={{ gridColumn: '1/-1' }}>
-                                            <FormLabel>Your timeline</FormLabel>
-                                            <Input
-                                                type="date"
-                                                slotProps={{
-                                                    input: {
-                                                        name: 'workDue',
-                                                    },
-                                                }}
-                                            />
-                                        </FormControl>
-                                        <FormControl sx={{ gridColumn: '1/-1' }}>
                                             <FormLabel>Cover letter</FormLabel>
                                             <Textarea
                                                 slotProps={{
@@ -250,7 +240,7 @@ function SendProposal() {
                                         PRO
                                     </Chip>
                                     <Typography fontSize="lg" fontWeight="lg" sx={{ mt: 1, mb: 0.5 }}>
-                                        Tien Le
+                                        {wallet.accountId}
                                     </Typography>
                                     <Typography level="body2" sx={{ maxWidth: '24ch' }}>
                                         Hello, this is my bio and I am a PRO member of Freelance dApp. I am a developer

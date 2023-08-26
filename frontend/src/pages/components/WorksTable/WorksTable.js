@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect, useContext } from 'react'
 import { Link as LinkRoute } from 'react-router-dom'
+import format from 'date-fns/format'
 import Avatar from '@mui/joy/Avatar'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
@@ -258,7 +259,6 @@ function WorksTable() {
                             </th>
                             <th style={{ width: 120, padding: 12 }}>Created Date</th>
                             <th style={{ width: 120, padding: 12 }}>Status</th>
-                            <th style={{ width: 220, padding: 12 }}>Freelancer</th>
                             <th style={{ width: 120, padding: 12 }}>Due Date</th>
                             <th style={{ width: 200, padding: 12 }}></th>
                         </tr>
@@ -282,11 +282,17 @@ function WorksTable() {
                                     />
                                 </td>
                                 <td>
-                                    <LinkRoute to={config.routes.workDetail}>
+                                    <LinkRoute
+                                        to={
+                                            'freelancerId' in work && !!work.freelancerId
+                                                ? config.routes.workDetail
+                                                : config.routes.workProposals
+                                        }
+                                    >
                                         <Typography fontWeight="md">{work.title}</Typography>
                                     </LinkRoute>
                                 </td>
-                                <td>{work?.creator?.createAt ? work.creator.createAt : 'Feb 3, 2023'}</td>
+                                <td>{work?.createdAt ? format(new Date(work.createdAt), 'PP') : 'Aug 26, 2023'}</td>
                                 <td>
                                     <Chip
                                         variant="soft"
@@ -322,17 +328,7 @@ function WorksTable() {
                                         {workStatusConvert(work.status)}
                                     </Chip>
                                 </td>
-                                <td>
-                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                        <Avatar size="sm">N</Avatar>
-                                        <div>
-                                            <Typography fontWeight="lg" level="body3" textColor="text.primary">
-                                                Steve Hampton
-                                            </Typography>
-                                        </div>
-                                    </Box>
-                                </td>
-                                <td>Feb 3, 2023</td>
+                                <td>{work?.deadline ? format(new Date(work.deadline), 'PP') : 'Not set'}</td>
                                 <td>
                                     <LinkRoute
                                         to={

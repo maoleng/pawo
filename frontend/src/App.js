@@ -24,11 +24,15 @@ function App({ isSignedIn, contractId, wallet }) {
                 Authorization: wallet.accountId,
             },
         })
-            .then((res) => {
-                const { data } = res
+            .then(async (res) => {
                 console.log(res)
-                if (data.status) {
-                    setUserId(data.data.id)
+                if (res.data.status) {
+                    localStorage.setItem('userId', JSON.stringify(res.data.data.id))
+                    await wallet.callMethod({
+                        method: 'Register',
+                        contractId,
+                    })
+                    setUserId(res.data.data.id)
                 }
             })
             .catch((res) => {
@@ -37,7 +41,11 @@ function App({ isSignedIn, contractId, wallet }) {
     }
 
     useEffect(() => {
-        registerUser()
+        if (localStorage.getItem('userId') !== null) {
+            setUserId(JSON.parse(localStorage.getItem('userId')))
+        } else if (localStorage.getItem('workDetail') !== null) {
+            registerUser()
+        }
     }, [])
 
     return (

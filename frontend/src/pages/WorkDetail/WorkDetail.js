@@ -39,10 +39,10 @@ function WorkDetail() {
     const [openModalRatingLoading, setOpenModalRatingLoading] = useState(false)
     const [openModalRatingSuccess, setOpenModalRatingSuccess] = useState(false)
     const [isBtnLoading, setIsBtnLoading] = useState(false)
-    const [workDueDateTime, setWorkDueDateTime] = useState('')
     const [error, setError] = useState({ status: false, message: '' })
 
     const { state } = useLocation()
+    const [workDueDateTime, setWorkDueDateTime] = useState(state?.work.deadline ?? '')
 
     useEffect(() => {
         // localStorage.setItem('isWorkPaidSuccess', JSON.stringify(false))
@@ -79,9 +79,9 @@ function WorkDetail() {
                         contractId,
                     })
                     setError({ status: false })
+                    setOpenModalAlert(true)
                 } else {
                     setError({ status: true, message: res?.message })
-                    setOpenModalAlert(true)
                 }
             })
             .catch((res) => {
@@ -96,6 +96,7 @@ function WorkDetail() {
     const changeDueDateHandler = async (e) => {
         e.preventDefault()
         setIsBtnLoading(true)
+
         const dateTime = e.target.elements[0].value + ' ' + e.target.elements[1].value + ':59'
         const data = {
             jobId: work.id,
@@ -141,8 +142,9 @@ function WorkDetail() {
         e.preventDefault()
         setOpenModalRatingLoading(true)
         const { commentRating, starRating } = e.target.elements
+        console.log(work)
         const data = {
-            userId: work?.freelancer?.id,
+            userId: work?.freelancerId,
             jobId: work?.id,
             star: starRating.value,
             message: commentRating.value,
@@ -166,7 +168,7 @@ function WorkDetail() {
                     setError({ status: false })
                     setOpenModalRatingSuccess(true)
                 } else {
-                    setError({ status: true, message: res?.message })
+                    setError({ status: true, message: res.data.message })
                 }
             })
             .catch((res) => {
@@ -372,21 +374,24 @@ function WorkDetail() {
                                         </div>
                                     </AspectRatio>
                                     <Box>
-                                        <h5 className={cx('submission-title')}>Submission</h5>
+                                        <h5 className={cx('submission-title')}>Product</h5>
                                     </Box>
                                 </Box>
                                 <Box>
                                     <h5 className={cx('work-due')}>
-                                        Due date: {workDueDateTime ? workDueDateTime : 'Sat, July 31 2023, 00:00'}
+                                        Due date:{' '}
+                                        {workDueDateTime ? format(new Date(workDueDateTime), 'PPPPp') : 'Not set'}
                                     </h5>
                                 </Box>
                             </Box>
-                            <CardContent>
-                                <Typography fontSize="md">File draft</Typography>
-                                <Typography level="body1">
-                                    <a href="github.com">github.com</a>
-                                </Typography>
-                            </CardContent>
+                            {work.status === 2 && (
+                                <CardContent>
+                                    <Typography fontSize="md">File draft</Typography>
+                                    <Typography level="body1">
+                                        <a href="github.com">github.com</a>
+                                    </Typography>
+                                </CardContent>
+                            )}
                             <CardActions>
                                 <Button
                                     variant="outlined"
@@ -416,12 +421,12 @@ function WorkDetail() {
                 title="Change due"
                 message="Fill in the due date of the work."
                 inputType="datetime"
+                isLoading={isBtnLoading}
                 submitFormHandler={changeDueDateHandler}
             />
             <ModalLoading
                 open={openModalLoading}
                 setOpen={setOpenModalLoading}
-                isLoading={isBtnLoading}
                 title="Loading"
                 message="Your transaction is being processing."
             />

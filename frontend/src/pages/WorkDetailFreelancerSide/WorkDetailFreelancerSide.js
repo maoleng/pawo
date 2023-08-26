@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
 import { useLocation } from 'react-router-dom'
+import format from 'date-fns/format'
 import classNames from 'classnames/bind'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
@@ -80,7 +81,7 @@ function WorkDetailFreelancerSide() {
         setOpenModalRatingLoading(true)
         const { commentRating, starRating } = e.target.elements
         const data = {
-            userId: work?.creator?.id,
+            userId: work?.creatorId,
             jobId: work?.id,
             star: starRating.value,
             message: commentRating.value,
@@ -221,22 +222,6 @@ function WorkDetailFreelancerSide() {
                                                                 {category}
                                                             </Chip>
                                                         ))}
-                                                        <Chip
-                                                            variant="soft"
-                                                            color="neutral"
-                                                            size="lg"
-                                                            sx={{ pointerEvents: 'none' }}
-                                                        >
-                                                            AI
-                                                        </Chip>
-                                                        <Chip
-                                                            variant="soft"
-                                                            color="neutral"
-                                                            size="lg"
-                                                            sx={{ pointerEvents: 'none' }}
-                                                        >
-                                                            UI/UX
-                                                        </Chip>
                                                     </Box>
                                                 </Col>
                                             </Row>
@@ -306,7 +291,11 @@ function WorkDetailFreelancerSide() {
                                     </Box>
                                 </Box>
                                 <Box>
-                                    <h5 className={cx('work-due')}>Due date: Sat, July 31, 2023</h5>
+                                    <h5 className={cx('work-due')}>
+                                        {state?.work.deadline
+                                            ? format(new Date(state?.work.deadline), 'PPPPp')
+                                            : 'Not set'}
+                                    </h5>
                                 </Box>
                             </Box>
                             <form className={cx('submit-product-form')} onSubmit={submitProductHandler}>

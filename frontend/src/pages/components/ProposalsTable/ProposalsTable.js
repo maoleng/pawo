@@ -72,9 +72,6 @@ function ProposalsTable() {
     const [selected, setSelected] = useState([])
     const [openFilter, setOpenFilter] = useState(false)
 
-    console.log(userId)
-    console.log(proposalList)
-
     useEffect(() => {
         ;(async () => {
             await axiosInstance({
@@ -249,7 +246,6 @@ function ProposalsTable() {
                             </th>
                             <th style={{ width: 120, padding: 12 }}>Applied Date</th>
                             <th style={{ width: 120, padding: 12 }}>Status</th>
-                            <th style={{ width: 220, padding: 12 }}>Employer</th>
                             <th style={{ width: 120, padding: 12 }}>Due Date</th>
                             <th style={{ width: 200, padding: 12 }}> </th>
                         </tr>
@@ -273,11 +269,11 @@ function ProposalsTable() {
                                     />
                                 </td>
                                 <td>
-                                    <LinkRoute to={config.routes.workDetail}>
-                                        <Typography fontWeight="md">{proposal.jobObj.title}</Typography>
-                                    </LinkRoute>
+                                    <Typography fontWeight="md">{proposal.jobObj.title}</Typography>
                                 </td>
-                                <td>{proposal.createAt ? format(new Date(proposal.createAt), 'PP') : 'Feb 3, 2023'}</td>
+                                <td>
+                                    {proposal.createdAt ? format(new Date(proposal.createdAt), 'PP') : 'Aug 26, 2023'}
+                                </td>
                                 <td>
                                     <Chip
                                         variant="soft"
@@ -286,32 +282,24 @@ function ProposalsTable() {
                                             {
                                                 Success: <CheckmarkRegular />,
                                                 Pending: <ArrowStepBackRegular />,
-                                            }['freelancer' in proposal?.jobObj ? 'Success' : 'Pending']
+                                            }[proposal?.jobObj?.status !== 0 ? 'Success' : 'Pending']
                                         }
                                         color={
                                             {
                                                 Success: 'success',
                                                 Pending: 'neutral',
-                                            }['freelancer' in proposal?.jobObj ? 'Success' : 'Pending']
+                                            }[proposal?.jobObj?.status !== 0 ? 'Success' : 'Pending']
                                         }
                                         sx={{ fontSize: '1.2rem' }}
                                     >
-                                        {['freelancer' in proposal?.jobObj ? 'Success' : 'Pending']}
+                                        {[proposal?.jobObj?.status !== 0 ? 'Success' : 'Pending']}
                                     </Chip>
                                 </td>
                                 <td>
-                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                        <Avatar size="sm">C</Avatar>
-                                        <div>
-                                            <Typography fontWeight="lg" level="body3" textColor="text.primary">
-                                                tienne.testnet
-                                            </Typography>
-                                        </div>
-                                    </Box>
+                                    {proposal.jobObj?.deadline ? format(new Date(proposal.jobObj?.deadline), 'PP') : ''}
                                 </td>
-                                <td>{proposal.createAt ? format(new Date(proposal.createAt), 'PP') : 'Feb 3, 2023'}</td>
                                 <td>
-                                    {'freelancerId' in proposal?.jobObj && (
+                                    {proposal?.jobObj?.status !== 0 && (
                                         <LinkRoute
                                             to={config.routes.workDetailFreelancerSide}
                                             state={{ work: proposal?.jobObj }}

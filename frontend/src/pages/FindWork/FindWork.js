@@ -211,22 +211,6 @@ function FindWork() {
                                                     {category}
                                                 </Chip>
                                             ))}
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                AI
-                                            </Chip>
-                                            <Chip
-                                                variant="soft"
-                                                color="neutral"
-                                                size="lg"
-                                                sx={{ pointerEvents: 'none' }}
-                                            >
-                                                UI/UX
-                                            </Chip>
                                         </Box>
                                     </CardContent>
                                     <CardActions buttonFlex="0 1 120px">
@@ -271,7 +255,7 @@ function FindWork() {
                                     PRO
                                 </Chip>
                                 <Typography fontSize="lg" fontWeight="lg" sx={{ mt: 1, mb: 0.5 }}>
-                                    Tien Le
+                                    {wallet.accountId}
                                 </Typography>
                                 <Typography level="body2" sx={{ maxWidth: '24ch' }}>
                                     Hello, this is my bio and I am a PRO member of Freelance dApp. I am a developer and
