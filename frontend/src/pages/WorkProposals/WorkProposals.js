@@ -135,7 +135,7 @@ function WorkProposals() {
                                                     sx={{ '--Avatar-size': '4rem' }}
                                                 />
                                                 <Box>
-                                                    <h5 className={cx('talent-name')}>tilux.testnet</h5>
+                                                    <h5 className={cx('talent-name')}>{proposal.userObj.accountId}</h5>
                                                     <h6 className={cx('talent-role')}>Blockchain Developer</h6>
                                                 </Box>
                                             </Box>
