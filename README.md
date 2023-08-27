@@ -4,7 +4,7 @@
 
 [Pawo](https://pawo-app.skrt.cc/) is a is a platform that leverages blockchain technology and smart contracts for freelancing services. It enables direct and secure peer-to-peer transactions between freelancers and employers.
 
-<table>
+<table align="center">
 	<tr>
 		<td><image width="48px" src="https://github.com/maoleng/pawo/assets/91431461/6e547b3a-08c8-4bee-9713-d80987305a64"></td>
 		<td><image width="48px" src="https://github.com/maoleng/pawo/assets/91431461/14674063-5378-4d76-b46e-6a987e218203"></td>
