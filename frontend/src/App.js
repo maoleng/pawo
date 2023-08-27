@@ -41,7 +41,7 @@ function App({ isSignedIn, contractId, wallet }) {
     }
 
     useEffect(() => {
-        if (localStorage.getItem('userId')) {
+        if (localStorage.getItem('userId') && localStorage.getItem('userId') !== 'undefined') {
             setUserId(JSON.parse(localStorage.getItem('userId')))
         } else {
             registerUser()
