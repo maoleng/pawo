@@ -130,4 +130,4 @@
 </table>
 
 ## 4 License
-Pawo is made available under the MIT License (MIT). Please see License File for more information.
+Pawo is made available under the Apache License. Please see License File for more information.
